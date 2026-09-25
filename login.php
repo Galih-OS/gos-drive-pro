@@ -2,20 +2,19 @@
 
 /*
 |--------------------------------------------------------------------------
-| GHOST DRIVE - SECURE LOGIN
-|--------------------------------------------------------------------------
-| Proteksi:
-| - Prepared statement
-| - Password hashing verification
-| - CSRF protection
-| - Session cookie hardening
-| - Session fixation protection
-| - Login attempt throttling
-| - Input length limitation
-| - Generic authentication error
-| - No password stored in session
+| GHOST DRIVE - HARDENED LOGIN
 |--------------------------------------------------------------------------
 */
+
+
+/* =========================================================
+   DETEKSI HTTPS
+========================================================= */
+
+$isHttps =
+    isset($_SERVER['HTTPS']) &&
+    $_SERVER['HTTPS'] !== '' &&
+    strtolower($_SERVER['HTTPS']) !== 'off';
 
 
 /* =========================================================
@@ -23,11 +22,6 @@
 ========================================================= */
 
 if (session_status() === PHP_SESSION_NONE) {
-
-    $isHttps =
-        isset($_SERVER['HTTPS']) &&
-        $_SERVER['HTTPS'] !== '' &&
-        strtolower($_SERVER['HTTPS']) !== 'off';
 
     session_set_cookie_params([
         'lifetime' => 0,
@@ -60,13 +54,64 @@ if (session_status() === PHP_SESSION_NONE) {
 
 
 /* =========================================================
+   CSP NONCE
+========================================================= */
+
+$cspNonce =
+    base64_encode(
+        random_bytes(32)
+    );
+
+
+/* =========================================================
    SECURITY HEADERS
 ========================================================= */
 
 header('X-Frame-Options: SAMEORIGIN');
+
 header('X-Content-Type-Options: nosniff');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+
+header(
+    'Referrer-Policy: strict-origin-when-cross-origin'
+);
+
+header(
+    'Permissions-Policy: camera=(), microphone=(), geolocation=()'
+);
+
+
+/*
+ * CSP:
+ * - Hanya izinkan resource dari sumber yang diperlukan.
+ * - Inline CSS/JS harus menggunakan nonce.
+ */
+
+header(
+    "Content-Security-Policy: "
+    . "default-src 'self'; "
+    . "base-uri 'self'; "
+    . "form-action 'self'; "
+    . "frame-ancestors 'self'; "
+    . "object-src 'none'; "
+    . "script-src 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+    . "style-src 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+    . "font-src 'self' https://cdnjs.cloudflare.com data:; "
+    . "img-src 'self' data:; "
+    . "connect-src 'self';"
+);
+
+
+/*
+ * HSTS hanya dikirim ketika benar-benar HTTPS.
+ */
+
+if ($isHttps) {
+
+    header(
+        'Strict-Transport-Security: max-age=31536000; includeSubDomains'
+    );
+
+}
 
 
 /* =========================================================
@@ -80,7 +125,9 @@ if (
 ) {
 
     $_SESSION['login_csrf'] =
-        bin2hex(random_bytes(32));
+        bin2hex(
+            random_bytes(32)
+        );
 
 }
 
@@ -99,7 +146,7 @@ $loginSuccess = false;
 
 
 /* =========================================================
-   LOGIN THROTTLING
+   LOGIN ATTEMPTS
 ========================================================= */
 
 if (
@@ -113,10 +160,11 @@ if (
 
 
 /* =========================================================
-   BERSIHKAN ATTEMPT LAMA
+   HAPUS ATTEMPT LAMA
 ========================================================= */
 
 $nowTimestamp = time();
+
 
 foreach (
     $_SESSION['login_attempts']
@@ -138,11 +186,13 @@ foreach (
 
 
 /* =========================================================
-   MAKSIMAL 5 PERCOBAAN / 15 MENIT
+   BATASI LOGIN
 ========================================================= */
 
 $attemptCount =
-    count($_SESSION['login_attempts']);
+    count(
+        $_SESSION['login_attempts']
+    );
 
 
 $loginBlocked =
@@ -185,7 +235,7 @@ if (
 
 
     /* =====================================================
-       CEK LOGIN THROTTLE
+       CEK THROTTLING
     ===================================================== */
 
     elseif ($loginBlocked) {
@@ -201,7 +251,7 @@ if (
 
 
         /* =================================================
-           AMBIL INPUT
+           INPUT
         ================================================= */
 
         $username =
@@ -219,7 +269,7 @@ if (
 
 
         /* =================================================
-           BATAS INPUT
+           VALIDASI
         ================================================= */
 
         if (
@@ -232,14 +282,21 @@ if (
 
         }
 
-        elseif (mb_strlen($username) > 100) {
+        elseif (
+            mb_strlen(
+                $username,
+                'UTF-8'
+            ) > 100
+        ) {
 
             $error =
                 "Username atau password salah.";
 
         }
 
-        elseif (strlen($password) > 4096) {
+        elseif (
+            strlen($password) > 4096
+        ) {
 
             $error =
                 "Username atau password salah.";
@@ -279,7 +336,7 @@ if (
 
 
             /* =================================================
-               VERIFIKASI PASSWORD
+               PASSWORD
             ================================================= */
 
             $passwordValid = false;
@@ -297,17 +354,13 @@ if (
 
 
             /* =================================================
-               JIKA LOGIN GAGAL
+               LOGIN GAGAL
             ================================================= */
 
             if (
                 !$user ||
                 !$passwordValid
             ) {
-
-                /*
-                 * Catat percobaan gagal.
-                 */
 
                 $_SESSION['login_attempts'][] =
                     time();
@@ -320,18 +373,13 @@ if (
 
 
             /* =================================================
-               CEK STATUS AKUN
+               AKUN SUSPENDED
             ================================================= */
 
             elseif (
                 isset($user['status']) &&
                 $user['status'] === 'suspended'
             ) {
-
-                /*
-                 * Jangan memberikan detail berlebihan
-                 * kepada pihak yang tidak berwenang.
-                 */
 
                 $error =
                     "Akun tidak dapat digunakan. "
@@ -355,7 +403,7 @@ if (
 
 
                 /* =============================================
-                   BERSIHKAN LOGIN ATTEMPTS
+                   RESET LOGIN ATTEMPTS
                 ============================================= */
 
                 $_SESSION['login_attempts'] = [];
@@ -391,7 +439,7 @@ if (
 
 
                 /* =============================================
-                   ROTASI CSRF TOKEN
+                   ROTASI CSRF
                 ============================================= */
 
                 $_SESSION['login_csrf'] =
@@ -401,7 +449,7 @@ if (
 
 
                 /* =============================================
-                   DATA USER SESSION
+                   DATA SESSION
                 ============================================= */
 
                 $_SESSION['user'] = [
@@ -422,7 +470,7 @@ if (
 
 
                 /* =============================================
-                   SESSION SECURITY TIMESTAMP
+                   SESSION SECURITY
                 ============================================= */
 
                 $_SESSION['login_time'] =
@@ -438,7 +486,7 @@ if (
 
 
                 /* =============================================
-                   LOGIN SUCCESS
+                   SUCCESS
                 ============================================= */
 
                 $loginSuccess = true;
@@ -469,7 +517,7 @@ if (
 
 <meta
     name="robots"
-    content="noindex,nofollow"
+    content="noindex,nofollow,noarchive"
 >
 
 <title>Ghost Drive</title>
@@ -493,7 +541,11 @@ if (
 >
 
 
-<style>
+<style nonce="<?= htmlspecialchars(
+    $cspNonce,
+    ENT_QUOTES,
+    'UTF-8'
+) ?>">
 
 body{
 
@@ -795,27 +847,17 @@ body{
 
     <div class="login-success">
 
-
         <div class="icon">
-
             ✅
-
         </div>
-
 
         <div class="title">
-
             Login Berhasil
-
         </div>
-
 
         <div class="message">
-
             Berhasil, masuk menuju halaman selanjutnya...
-
         </div>
-
 
         <div class="mt-3">
 
@@ -826,11 +868,14 @@ body{
 
         </div>
 
-
     </div>
 
 
-    <script>
+    <script nonce="<?= htmlspecialchars(
+        $cspNonce,
+        ENT_QUOTES,
+        'UTF-8'
+    ) ?>">
 
     setTimeout(function(){
 
@@ -846,9 +891,7 @@ body{
 
 
     <h2>
-
         Ghost Drive
-
     </h2>
 
 
@@ -935,8 +978,6 @@ body{
         novalidate
     >
 
-        <!-- CSRF -->
-
         <input
             type="hidden"
             name="csrf_token"
@@ -997,19 +1038,15 @@ body{
 
         </button>
 
-
     </form>
 
 
     <div class="footer-link">
 
-
         <p class="mt-3">
 
             <a href="forgot_password.php">
-
                 🔑 Lupa Password?
-
             </a>
 
         </p>
@@ -1020,9 +1057,7 @@ body{
             Belum punya akun?
 
             <a href="register.php">
-
                 Daftar
-
             </a>
 
         </p>
@@ -1045,7 +1080,6 @@ body{
 
         </p>
 
-
     </div>
 
 
@@ -1055,7 +1089,11 @@ body{
 </div>
 
 
-<script>
+<script nonce="<?= htmlspecialchars(
+    $cspNonce,
+    ENT_QUOTES,
+    'UTF-8'
+) ?>">
 
 function togglePassword(){
 

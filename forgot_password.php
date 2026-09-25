@@ -1,109 +1,518 @@
 <?php
 
+declare(strict_types=1);
 require 'config/db.php';
 
-$error = '';
+
+/*
+|--------------------------------------------------------------------------
+| PASTIKAN SESSION AKTIF
+|--------------------------------------------------------------------------
+*/
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CEK HTTPS
+|--------------------------------------------------------------------------
+*/
+
+$secureCookie = (
+    isset($_SERVER['HTTPS']) &&
+    $_SERVER['HTTPS'] !== 'off'
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| SECURITY HEADERS
+|--------------------------------------------------------------------------
+*/
+
+header('X-Frame-Options: SAMEORIGIN');
+
+header('X-Content-Type-Options: nosniff');
+
+header(
+    'Referrer-Policy: strict-origin-when-cross-origin'
+);
+
+header(
+    'Permissions-Policy: camera=(), microphone=(), geolocation=()'
+);
+
+if ($secureCookie) {
+
+    header(
+        'Strict-Transport-Security: '
+        . 'max-age=31536000; includeSubDomains'
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CSP NONCE
+|--------------------------------------------------------------------------
+*/
+
+$cspNonce = base64_encode(
+    random_bytes(16)
+);
+
+header(
+    "Content-Security-Policy: "
+    . "default-src 'self'; "
+    . "style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; "
+    . "script-src 'self' 'nonce-{$cspNonce}'; "
+    . "font-src 'self' https://cdn.jsdelivr.net; "
+    . "img-src 'self' data:; "
+    . "object-src 'none'; "
+    . "base-uri 'self'; "
+    . "form-action 'self'; "
+    . "frame-ancestors 'self';"
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| VARIABLES
+|--------------------------------------------------------------------------
+*/
+
+$error   = '';
 $success = '';
 
 
-if(isset($_POST['reset_password'])){
+/*
+|--------------------------------------------------------------------------
+| CSRF TOKEN
+|--------------------------------------------------------------------------
+*/
 
-    $username = trim($_POST['username']);
-    $newPassword = $_POST['new_password'];
-    $confirmPassword = $_POST['confirm_password'];
+if (
+    empty($_SESSION['reset_password_csrf']) ||
+    !is_string($_SESSION['reset_password_csrf'])
+) {
+
+    $_SESSION['reset_password_csrf'] =
+        bin2hex(random_bytes(32));
+}
 
 
-    /* =========================================
-       VALIDASI
-    ========================================= */
+/*
+|--------------------------------------------------------------------------
+| RATE LIMIT
+|--------------------------------------------------------------------------
+| Maksimal 5 percobaan dalam 15 menit per session.
+|--------------------------------------------------------------------------
+*/
 
-    if($username === ''){
+$maxAttempts = 5;
 
-        $error = "Username wajib diisi.";
+$window = 15 * 60;
 
-    }
 
-    elseif(strlen($newPassword) < 6){
+if (
+    !isset($_SESSION['reset_attempts']) ||
+    !is_array($_SESSION['reset_attempts'])
+) {
+
+    $_SESSION['reset_attempts'] = [];
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| HAPUS ATTEMPT LAMA
+|--------------------------------------------------------------------------
+*/
+
+$now = time();
+
+$_SESSION['reset_attempts'] = array_values(
+
+    array_filter(
+
+        $_SESSION['reset_attempts'],
+
+        static function ($timestamp) use ($now, $window) {
+
+            return is_int($timestamp)
+                && ($now - $timestamp) < $window;
+        }
+    )
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| PROSES RESET PASSWORD
+|--------------------------------------------------------------------------
+*/
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RATE LIMIT
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        count($_SESSION['reset_attempts']) >=
+        $maxAttempts
+    ) {
 
         $error =
-            "Password baru minimal 6 karakter.";
+            'Terlalu banyak percobaan. '
+            . 'Silakan coba lagi beberapa menit kemudian.';
 
-    }
-
-    elseif($newPassword !== $confirmPassword){
-
-        $error =
-            "Konfirmasi password tidak sama.";
-
-    }
-
-    else{
-
-        /* =========================================
-           CEK USER
-        ========================================= */
-
-        $stmt = $pdo->prepare("
-            SELECT id, username
-            FROM users
-            WHERE username = ?
-            LIMIT 1
-        ");
-
-        $stmt->execute([
-            $username
-        ]);
-
-        $user = $stmt->fetch();
+    } else {
 
 
-        if(!$user){
+        /*
+        |--------------------------------------------------------------------------
+        | CATAT PERCOBAAN
+        |--------------------------------------------------------------------------
+        */
+
+        $_SESSION['reset_attempts'][] = time();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CEK CSRF
+        |--------------------------------------------------------------------------
+        */
+
+        $csrfToken =
+            $_POST['csrf_token'] ?? '';
+
+
+        if (
+            !is_string($csrfToken) ||
+            !hash_equals(
+                $_SESSION['reset_password_csrf'],
+                $csrfToken
+            )
+        ) {
 
             $error =
-                "Username tidak ditemukan.";
+                'Permintaan tidak valid. '
+                . 'Silakan muat ulang halaman dan coba lagi.';
 
-        }
+        } else {
 
-        else{
 
-            /* =====================================
-               HASH PASSWORD BARU
-            ===================================== */
+            /*
+            |--------------------------------------------------------------------------
+            | AMBIL INPUT
+            |--------------------------------------------------------------------------
+            */
 
-            $hashedPassword =
-                password_hash(
-                    $newPassword,
-                    PASSWORD_DEFAULT
+            $username =
+                trim(
+                    (string)(
+                        $_POST['username'] ?? ''
+                    )
+                );
+
+            $newPassword =
+                (string)(
+                    $_POST['new_password'] ?? ''
+                );
+
+            $confirmPassword =
+                (string)(
+                    $_POST['confirm_password'] ?? ''
                 );
 
 
-            /* =====================================
-               UPDATE PASSWORD
-            ===================================== */
+            /*
+            |--------------------------------------------------------------------------
+            | VALIDASI USERNAME
+            |--------------------------------------------------------------------------
+            */
 
-            $stmt = $pdo->prepare("
-                UPDATE users
-                SET password = ?
-                WHERE id = ?
-            ");
+            if ($username === '') {
 
-            $stmt->execute([
-                $hashedPassword,
-                $user['id']
-            ]);
+                $error =
+                    'Username wajib diisi.';
 
+            } elseif (strlen($username) > 50) {
 
-            if($stmt->rowCount() >= 0){
+                $error =
+                    'Username tidak valid.';
 
-                $success =
-                    "Password berhasil diganti.";
+            } elseif (
+                !preg_match(
+                    '/^[A-Za-z0-9._-]+$/',
+                    $username
+                )
+            ) {
 
+                $error =
+                    'Username mengandung karakter '
+                    . 'yang tidak valid.';
             }
 
+
+            /*
+            |--------------------------------------------------------------------------
+            | VALIDASI PASSWORD
+            |--------------------------------------------------------------------------
+            */
+
+            elseif (strlen($newPassword) < 8) {
+
+                $error =
+                    'Password baru minimal 8 karakter.';
+
+            } elseif (strlen($newPassword) > 4096) {
+
+                $error =
+                    'Password terlalu panjang.';
+
+            } elseif (
+                $newPassword !== $confirmPassword
+            ) {
+
+                $error =
+                    'Konfirmasi password tidak sama.';
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | PROSES DATABASE
+            |--------------------------------------------------------------------------
+            */
+
+            else {
+
+                try {
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | CARI USER
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $stmt = $pdo->prepare("
+                        SELECT
+                            id,
+                            username,
+                            status
+                        FROM users
+                        WHERE username = ?
+                        LIMIT 1
+                    ");
+
+                    $stmt->execute([
+                        $username
+                    ]);
+
+                    $user = $stmt->fetch(
+                        PDO::FETCH_ASSOC
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | USER TIDAK DITEMUKAN
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!$user) {
+
+                        $error =
+                            'Username atau proses reset '
+                            . 'tidak dapat diproses.';
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | CEK SUSPENDED
+                    |--------------------------------------------------------------------------
+                    */
+
+                    } elseif (
+                        isset($user['status']) &&
+                        $user['status'] === 'suspended'
+                    ) {
+
+                        $error =
+                            'Akun tidak dapat melakukan '
+                            . 'reset password.';
+
+
+                    } else {
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | HASH PASSWORD
+                        |--------------------------------------------------------------------------
+                        */
+
+                        $hashedPassword =
+                            password_hash(
+                                $newPassword,
+                                PASSWORD_DEFAULT
+                            );
+
+
+                        if (
+                            $hashedPassword === false
+                        ) {
+
+                            throw new RuntimeException(
+                                'Password hashing gagal.'
+                            );
+                        }
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | UPDATE PASSWORD
+                        |--------------------------------------------------------------------------
+                        */
+
+                        $update = $pdo->prepare("
+                            UPDATE users
+                            SET password = ?
+                            WHERE id = ?
+                            LIMIT 1
+                        ");
+
+                        $update->execute([
+                            $hashedPassword,
+                            (int)$user['id']
+                        ]);
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | CEK UPDATE
+                        |--------------------------------------------------------------------------
+                        */
+
+                        if (
+                            $update->rowCount() !== 1
+                        ) {
+
+                            throw new RuntimeException(
+                                'Password gagal diperbarui.'
+                            );
+                        }
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | BERSIHKAN SESSION
+                        |--------------------------------------------------------------------------
+                        |
+                        | Tidak menggunakan:
+                        | session_destroy();
+                        | session_start();
+                        |
+                        | Cukup kosongkan session lalu
+                        | regenerasi session ID.
+                        |--------------------------------------------------------------------------
+                        */
+
+                        $_SESSION = [];
+
+                        session_regenerate_id(true);
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | CSRF BARU
+                        |--------------------------------------------------------------------------
+                        */
+
+                        $_SESSION[
+                            'reset_password_csrf'
+                        ] =
+                            bin2hex(
+                                random_bytes(32)
+                            );
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | RESET RATE LIMIT
+                        |--------------------------------------------------------------------------
+                        */
+
+                        $_SESSION[
+                            'reset_attempts'
+                        ] = [];
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | PESAN SUKSES
+                        |--------------------------------------------------------------------------
+                        */
+
+                        $success =
+                            'Password berhasil diganti. '
+                            . 'Silakan login menggunakan '
+                            . 'password baru.';
+                    }
+
+
+                } catch (
+                    PDOException |
+                    RuntimeException |
+                    Throwable $e
+                ) {
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | JANGAN TAMPILKAN ERROR INTERNAL
+                    |--------------------------------------------------------------------------
+                    */
+
+                    error_log(
+                        'Ghost Drive reset password error: '
+                        . $e->getMessage()
+                    );
+
+
+                    $error =
+                        'Terjadi kesalahan saat memproses '
+                        . 'permintaan. Silakan coba lagi.';
+                }
+            }
         }
-
     }
+}
 
+
+/*
+|--------------------------------------------------------------------------
+| ESCAPE OUTPUT
+|--------------------------------------------------------------------------
+*/
+
+function e(string $value): string
+{
+    return htmlspecialchars(
+        $value,
+        ENT_QUOTES | ENT_SUBSTITUTE,
+        'UTF-8'
+    );
 }
 
 ?>
@@ -121,8 +530,13 @@ if(isset($_POST['reset_password'])){
     content="width=device-width, initial-scale=1"
 >
 
+<meta
+    name="robots"
+    content="noindex,nofollow,noarchive"
+>
+
 <title>
-    Lupa Password - Ghost Drive
+    Reset Password - Ghost Drive
 </title>
 
 
@@ -136,7 +550,9 @@ if(isset($_POST['reset_password'])){
 
 body{
 
-    height:100vh;
+    min-height:100vh;
+
+    margin:0;
 
     background:
         linear-gradient(
@@ -157,6 +573,8 @@ body{
     justify-content:center;
 
     align-items:center;
+
+    padding:20px;
 
     font-family:
         'Segoe UI',
@@ -184,13 +602,18 @@ body{
 
 .glass-card{
 
-    width:400px;
+    width:100%;
+
+    max-width:400px;
 
     padding:40px;
 
     border-radius:20px;
 
     backdrop-filter:
+        blur(15px);
+
+    -webkit-backdrop-filter:
         blur(15px);
 
     background:
@@ -236,7 +659,9 @@ body{
     background:
         rgba(255,255,255,0.2);
 
-    border:none;
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
 
     color:white;
 
@@ -254,7 +679,9 @@ body{
 
 .form-control:focus{
 
-    box-shadow:none;
+    box-shadow:
+        0 0 0 3px
+        rgba(255,255,255,0.18);
 
     background:
         rgba(255,255,255,0.3);
@@ -270,11 +697,13 @@ body{
 
     padding:10px;
 
-    font-weight:500;
+    font-weight:600;
 
     background:white;
 
     color:#333;
+
+    border:none;
 
     transition:0.3s;
 
@@ -337,7 +766,9 @@ body{
 <div class="glass-card">
 
 
-    <h2>Ghost Drive</h2>
+    <h2>
+        Ghost Drive
+    </h2>
 
 
     <div class="subtitle">
@@ -350,14 +781,11 @@ body{
     <?php if($error !== ''): ?>
 
         <div
-            class="
-                alert
-                alert-danger
-                text-dark
-            "
+            class="alert alert-danger text-dark"
+            role="alert"
         >
 
-            <?= htmlspecialchars($error) ?>
+            <?= e($error) ?>
 
         </div>
 
@@ -367,79 +795,100 @@ body{
     <?php if($success !== ''): ?>
 
         <div
-            class="
-                alert
-                alert-success
-                text-dark
-            "
+            class="alert alert-success text-dark"
+            role="alert"
         >
 
-            <?= htmlspecialchars($success) ?>
+            <?= e($success) ?>
 
         </div>
-
-
-        <script>
-
-            alert(
-                "Password berhasil diganti!\n\n" +
-                "Silakan login menggunakan password baru."
-            );
-
-        </script>
 
     <?php endif; ?>
 
 
+    <?php if($success === ''): ?>
+
     <form
         method="POST"
-        onsubmit="return confirmReset();"
+        id="resetForm"
+        autocomplete="off"
     >
 
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="<?= e(
+                $_SESSION['reset_password_csrf']
+            ) ?>"
+        >
 
-        <label class="mb-1">
+
+        <label
+            class="mb-1"
+            for="username"
+        >
             Username
         </label>
 
+
         <input
             type="text"
+            id="username"
             name="username"
             class="form-control mb-3"
             placeholder="Masukkan username"
+            maxlength="50"
+            pattern="[A-Za-z0-9._-]+"
+            autocomplete="username"
             required
         >
 
 
-        <label class="mb-1">
+        <label
+            class="mb-1"
+            for="new_password"
+        >
             Password Baru
         </label>
 
+
         <input
             type="password"
+            id="new_password"
             name="new_password"
             class="form-control mb-3"
-            placeholder="Minimal 6 karakter"
-            minlength="6"
+            placeholder="Minimal 8 karakter"
+            minlength="8"
+            maxlength="4096"
+            autocomplete="new-password"
             required
         >
 
 
-        <label class="mb-1">
+        <label
+            class="mb-1"
+            for="confirm_password"
+        >
             Konfirmasi Password
         </label>
 
+
         <input
             type="password"
+            id="confirm_password"
             name="confirm_password"
             class="form-control mb-3"
             placeholder="Ulangi password baru"
-            minlength="6"
+            minlength="8"
+            maxlength="4096"
+            autocomplete="new-password"
             required
         >
 
 
         <button
             type="submit"
+            id="resetButton"
             name="reset_password"
             class="btn btn-reset w-100"
         >
@@ -450,6 +899,8 @@ body{
 
 
     </form>
+
+    <?php endif; ?>
 
 
     <div class="footer-link">
@@ -466,57 +917,80 @@ body{
 </div>
 
 
-<script>
+<script nonce="<?= e($cspNonce) ?>">
 
-/* =========================================
-   KONFIRMASI SEBELUM RESET
-========================================= */
+document
+    .getElementById('resetForm')
+    ?.addEventListener(
+        'submit',
+        function(event){
 
-function confirmReset(){
-
-    const username =
-        document.querySelector(
-            '[name="username"]'
-        ).value;
-
-    const newPassword =
-        document.querySelector(
-            '[name="new_password"]'
-        ).value;
-
-    const confirmPassword =
-        document.querySelector(
-            '[name="confirm_password"]'
-        ).value;
+            const newPassword =
+                document.getElementById(
+                    'new_password'
+                ).value;
 
 
-    if(newPassword !== confirmPassword){
-
-        alert(
-            "Password baru dan konfirmasi password tidak sama!"
-        );
-
-        return false;
-
-    }
+            const confirmPassword =
+                document.getElementById(
+                    'confirm_password'
+                ).value;
 
 
-    return confirm(
+            if(
+                newPassword !==
+                confirmPassword
+            ){
 
-        "⚠️ KONFIRMASI GANTI PASSWORD\n\n" +
+                event.preventDefault();
 
-        "Username: " +
-        username +
-        "\n\n" +
+                alert(
+                    'Password baru dan konfirmasi password tidak sama.'
+                );
 
-        "Password akun ini akan diganti " +
-        "dengan password baru.\n\n" +
+                return;
+            }
 
-        "Apakah Anda yakin ingin melanjutkan?"
 
+            const confirmed =
+                confirm(
+
+                    'KONFIRMASI GANTI PASSWORD\n\n' +
+
+                    'Password akun akan diganti ' +
+                    'dengan password baru.\n\n' +
+
+                    'Pastikan Anda memang memiliki ' +
+                    'hak untuk melakukan perubahan ini.\n\n' +
+
+                    'Lanjutkan?'
+                );
+
+
+            if(!confirmed){
+
+                event.preventDefault();
+
+                return;
+            }
+
+
+            const button =
+                document.getElementById(
+                    'resetButton'
+                );
+
+
+            if(button){
+
+                button.disabled = true;
+
+                button.innerText =
+                    'Memproses...';
+            }
+
+        }
     );
-
-}
 
 </script>
 
