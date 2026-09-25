@@ -1,8 +1,11 @@
-**GosDrive** 
-adalah aplikasi manajemen dan penyimpanan dokumen berbasis web yang dirancang untuk membantu pengguna menyimpan, mengelola, mengakses, melihat pratinjau, mengunduh, serta membagikan file secara lebih terstruktur dan mudah.
+**GosDrive** adalah aplikasi manajemen dan penyimpanan dokumen berbasis web yang dirancang untuk membantu pengguna menyimpan, mengelola, mengakses, melihat pratinjau, mengunduh, serta membagikan file secara lebih terstruktur dan mudah.
+
 GosDrive menyediakan lingkungan penyimpanan digital yang memungkinkan pengguna mengorganisasi file berdasarkan folder, melakukan pencarian dokumen, melihat berbagai jenis file secara langsung melalui fitur preview, serta mengunduh file sesuai kebutuhan. Aplikasi juga mendukung mekanisme berbagi file dan folder menggunakan tautan khusus sehingga dokumen dapat diakses oleh pihak lain tanpa harus memberikan akses langsung ke akun pengguna.
+
 Dalam aspek keamanan, GosDrive menerapkan autentikasi pengguna, verifikasi password menggunakan mekanisme hashing, pengelolaan session, pembatasan akses berdasarkan kepemilikan file, perlindungan terhadap session fixation, validasi token berbagi, serta sejumlah security header pada aplikasi. Setiap file yang tersimpan tetap dikelola berdasarkan identitas dan hak akses pengguna sehingga pemisahan antara data pengguna dapat dipertahankan.
+
 GosDrive juga dirancang untuk dapat menggunakan penyimpanan lokal maupun media penyimpanan jaringan, sehingga kapasitas penyimpanan aplikasi dapat disesuaikan dengan kebutuhan organisasi. Integrasi tersebut memungkinkan aplikasi berfungsi sebagai pusat pengelolaan dokumen internal tanpa harus bergantung sepenuhnya pada layanan cloud storage pihak ketiga.
+
 Dengan pendekatan tersebut, GosDrive tidak hanya berfungsi sebagai tempat penyimpanan file, tetapi juga sebagai **platform pengelolaan dokumen digital** yang mengintegrasikan penyimpanan, pengorganisasian, pencarian, preview, pengunduhan, dan distribusi dokumen dalam satu sistem berbasis web.
 
-**GosDrive — satu tempat untuk menyimpan, mengelola, mengakses, dan berbagi dokumen secara terstruktur.
+**GosDrive — satu tempat untuk menyimpan, mengelola, mengakses, dan berbagi dokumen secara terstruktur.**
