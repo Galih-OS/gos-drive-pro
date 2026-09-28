@@ -160,6 +160,11 @@ if (function_exists('mime_content_type')) {
 
 <head>
 
+<link
+    rel="shortcut icon"
+    href="ghostdrive.png"
+>
+
 <meta charset="UTF-8">
 
 <meta

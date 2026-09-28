@@ -77,10 +77,7 @@ gosdrive_logout();
 |--------------------------------------------------------------------------
 */
 
-header(
-    'Location: login.php?logout=1',
-    true,
-    303
-);
+header('Location: about.html', true, 303);
+exit;
 
 exit;
