@@ -1,48 +1,24 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-
-    <link
-    rel="shortcut icon"
-    href="ghostdrive.png"
-    >
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
->
+<meta name="description" content="GosDrive adalah aplikasi manajemen dan penyimpanan dokumen berbasis web untuk menyimpan, mengelola, mencari, melihat preview, mengunduh, dan berbagi dokumen secara terstruktur.">
 
-<meta
-    name="description"
-    content="GosDrive adalah aplikasi manajemen dan penyimpanan dokumen berbasis web untuk menyimpan, mengelola, mencari, melihat preview, mengunduh, dan berbagi dokumen secara terstruktur."
->
+<link rel="icon" type="image/png" href="ghostdrive.png">
 
-<meta
-    name="robots"
-    content="index,follow"
->
+<title>GosDrive — Digital Document Management</title>
 
-<title>
-    GosDrive — Digital Document Management
-</title>
-
-
-<!-- Bootstrap -->
 <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
     rel="stylesheet"
 >
 
-
-<!-- Font Awesome -->
 <link
-    rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    rel="stylesheet"
 >
-
 
 <style>
 
@@ -59,74 +35,382 @@ html{
 }
 
 body{
-
     margin:0;
-
-    font-family:
-        "Segoe UI",
-        Arial,
-        sans-serif;
-
+    min-height:100vh;
+    font-family:"Segoe UI",Arial,sans-serif;
     color:#eaf2ff;
-
-    background:
-        #07111f;
-
+    background:#020617;
     overflow-x:hidden;
+    isolation:isolate;
 }
 
 
 /* =========================================================
-   BACKGROUND
+   ANIMATED GRADIENT BACKGROUND
 ========================================================= */
 
-body::before{
-
-    content:"";
-
+.gradient-bg{
     position:fixed;
-
-    width:600px;
-
-    height:600px;
-
-    border-radius:50%;
+    inset:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    z-index:-10;
+    pointer-events:none;
 
     background:
-        rgba(0,123,255,.12);
-
-    filter:blur(100px);
-
-    top:-250px;
-
-    left:-200px;
-
-    z-index:-1;
+        linear-gradient(
+            120deg,
+            #020617 0%,
+            #03172e 20%,
+            #06294a 40%,
+            #071b3d 60%,
+            #100b32 80%,
+            #020617 100%
+        );
 }
 
 
-body::after{
+/* ---------------------------------------------------------
+   GRADIENT BLOBS
+--------------------------------------------------------- */
 
-    content:"";
+.gradient-blob{
+    position:absolute;
 
-    position:fixed;
+    width:650px;
+    height:650px;
 
-    width:500px;
+    border-radius:50%;
 
-    height:500px;
+    filter:blur(100px);
+
+    opacity:.55;
+
+    will-change:transform;
+
+    mix-blend-mode:screen;
+}
+
+
+/* BLUE */
+
+.gradient-blue{
+    background:
+        radial-gradient(
+            circle,
+            rgba(0,132,255,.95) 0%,
+            rgba(0,132,255,.65) 25%,
+            rgba(0,132,255,.20) 55%,
+            transparent 75%
+        );
+
+    left:-15%;
+    top:-10%;
+
+    animation:
+        blueMove
+        2s
+        ease-in-out
+        infinite
+        alternate;
+}
+
+
+/* PURPLE */
+
+.gradient-purple{
+    background:
+        radial-gradient(
+            circle,
+            rgba(91,45,255,.95) 0%,
+            rgba(91,45,255,.60) 25%,
+            rgba(91,45,255,.18) 55%,
+            transparent 75%
+        );
+
+    right:-15%;
+    top:-10%;
+
+    animation:
+        purpleMove
+        2s
+        ease-in-out
+        infinite
+        alternate;
+}
+
+
+/* CYAN */
+
+.gradient-cyan{
+    background:
+        radial-gradient(
+            circle,
+            rgba(0,220,255,.90) 0%,
+            rgba(0,220,255,.55) 25%,
+            rgba(0,220,255,.15) 55%,
+            transparent 75%
+        );
+
+    left:30%;
+    bottom:-35%;
+
+    animation:
+        cyanMove
+        3.5s
+        ease-in-out
+        infinite
+        alternate;
+}
+
+
+/* DARK BLUE */
+
+.gradient-dark-blue{
+    background:
+        radial-gradient(
+            circle,
+            rgba(0,72,180,.90) 0%,
+            rgba(0,72,180,.45) 30%,
+            rgba(0,72,180,.10) 60%,
+            transparent 75%
+        );
+
+    left:-20%;
+    bottom:-20%;
+
+    animation:
+        darkBlueMove
+        4s
+        ease-in-out
+        infinite
+        alternate;
+}
+
+
+/* ---------------------------------------------------------
+   MOVING LIGHT
+--------------------------------------------------------- */
+
+.gradient-flow{
+    position:absolute;
+
+    width:120%;
+    height:250px;
+
+    left:-10%;
+    top:40%;
 
     border-radius:50%;
 
     background:
-        rgba(0,200,255,.08);
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(0,150,255,.16),
+            rgba(120,70,255,.20),
+            rgba(0,220,255,.15),
+            transparent
+        );
 
-    filter:blur(100px);
+    filter:blur(80px);
 
-    right:-200px;
+    transform:rotate(-12deg);
 
-    bottom:-200px;
+    animation:
+        flowingLight
+        3s
+        ease-in-out
+        infinite
+        alternate;
+}
 
-    z-index:-1;
+
+/* ---------------------------------------------------------
+   OVERLAY
+--------------------------------------------------------- */
+
+.gradient-overlay{
+    position:absolute;
+    inset:0;
+
+    background:
+        radial-gradient(
+            circle at center,
+            transparent 15%,
+            rgba(0,0,0,.18) 100%
+        );
+
+    pointer-events:none;
+}
+
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+@keyframes blueMove{
+
+    0%{
+        transform:
+            translate3d(0,0,0)
+            scale(.75);
+    }
+
+    25%{
+        transform:
+            translate3d(25vw,10vh,0)
+            scale(1.15);
+    }
+
+    50%{
+        transform:
+            translate3d(50vw,25vh,0)
+            scale(.90);
+    }
+
+    75%{
+        transform:
+            translate3d(25vw,55vh,0)
+            scale(1.30);
+    }
+
+    100%{
+        transform:
+            translate3d(60vw,45vh,0)
+            scale(.80);
+    }
+}
+
+
+@keyframes purpleMove{
+
+    0%{
+        transform:
+            translate3d(0,0,0)
+            scale(.85);
+    }
+
+    25%{
+        transform:
+            translate3d(-20vw,20vh,0)
+            scale(1.25);
+    }
+
+    50%{
+        transform:
+            translate3d(-45vw,35vh,0)
+            scale(.80);
+    }
+
+    75%{
+        transform:
+            translate3d(-20vw,55vh,0)
+            scale(1.20);
+    }
+
+    100%{
+        transform:
+            translate3d(-55vw,65vh,0)
+            scale(.90);
+    }
+}
+
+
+@keyframes cyanMove{
+
+    0%{
+        transform:
+            translate3d(0,0,0)
+            scale(.70);
+    }
+
+    25%{
+        transform:
+            translate3d(-20vw,-20vh,0)
+            scale(1.20);
+    }
+
+    50%{
+        transform:
+            translate3d(20vw,-45vh,0)
+            scale(.85);
+    }
+
+    75%{
+        transform:
+            translate3d(35vw,-15vh,0)
+            scale(1.30);
+    }
+
+    100%{
+        transform:
+            translate3d(-10vw,-40vh,0)
+            scale(.80);
+    }
+}
+
+
+@keyframes darkBlueMove{
+
+    0%{
+        transform:
+            translate3d(0,0,0)
+            scale(.80);
+    }
+
+    30%{
+        transform:
+            translate3d(35vw,-20vh,0)
+            scale(1.25);
+    }
+
+    60%{
+        transform:
+            translate3d(60vw,-5vh,0)
+            scale(.85);
+    }
+
+    100%{
+        transform:
+            translate3d(30vw,-40vh,0)
+            scale(1.20);
+    }
+}
+
+
+@keyframes flowingLight{
+
+    0%{
+        transform:
+            translateX(-30%)
+            translateY(-15%)
+            rotate(-12deg)
+            scale(.85);
+
+        opacity:.25;
+    }
+
+    50%{
+        transform:
+            translateX(10%)
+            translateY(10%)
+            rotate(-8deg)
+            scale(1.15);
+
+        opacity:.60;
+    }
+
+    100%{
+        transform:
+            translateX(30%)
+            translateY(-5%)
+            rotate(-15deg)
+            scale(.90);
+
+        opacity:.30;
+    }
 }
 
 
@@ -135,58 +419,37 @@ body::after{
 ========================================================= */
 
 .navbar{
+    background:rgba(2,6,23,.55)!important;
 
-    background:
-        rgba(7,17,31,.75);
-
-    backdrop-filter:
-        blur(15px);
-
-    -webkit-backdrop-filter:
-        blur(15px);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
 
     border-bottom:
         1px solid
-        rgba(255,255,255,.07);
-
+        rgba(255,255,255,.08);
 }
 
 
-.brand{
-
-    font-size:24px;
-
+.navbar-brand{
+    color:#fff!important;
     font-weight:700;
-
-    color:white;
-
-    text-decoration:none;
-
+    letter-spacing:.5px;
 }
 
 
-.brand i{
-
+.navbar-brand i{
     color:#4da3ff;
-
-    margin-right:8px;
-
 }
 
 
 .nav-link{
-
-    color:#aebed4 !important;
-
-    margin-left:15px;
-
+    color:#cbd5e1!important;
+    transition:.25s;
 }
 
 
 .nav-link:hover{
-
-    color:white !important;
-
+    color:#fff!important;
 }
 
 
@@ -195,53 +458,50 @@ body::after{
 ========================================================= */
 
 .hero{
-
-    min-height:
-        90vh;
+    min-height:90vh;
 
     display:flex;
-
     align-items:center;
 
-    position:relative;
-
     padding:
-        80px 0;
+        100px
+        20px
+        80px;
 }
 
 
 .hero-badge{
-
     display:inline-flex;
-
     align-items:center;
-
     gap:8px;
 
-    padding:
-        8px 15px;
+    padding:8px 14px;
 
-    border-radius:50px;
+    border-radius:30px;
 
     background:
-        rgba(77,163,255,.10);
+        rgba(77,163,255,.12);
 
     border:
         1px solid
-        rgba(77,163,255,.25);
+        rgba(77,163,255,.30);
 
-    color:#8ec5ff;
+    color:#8bc5ff;
 
     font-size:13px;
+    font-weight:600;
 
-    margin-bottom:22px;
+    margin-bottom:20px;
 }
 
 
 .hero h1{
-
     font-size:
-        clamp(42px,6vw,76px);
+        clamp(
+            42px,
+            6vw,
+            76px
+        );
 
     line-height:1.05;
 
@@ -250,219 +510,235 @@ body::after{
     letter-spacing:-2px;
 
     margin-bottom:25px;
-
 }
 
 
 .hero h1 span{
+    background:
+        linear-gradient(
+            90deg,
+            #ffffff,
+            #65b5ff,
+            #8c7bff
+        );
 
-    color:#4da3ff;
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
 }
 
 
-.hero-description{
-
-    max-width:700px;
-
-    color:#aebed4;
+.hero p{
+    color:#b8c7dc;
 
     font-size:18px;
 
     line-height:1.8;
 
-}
-
-
-.hero-buttons{
-
-    margin-top:35px;
-}
-
-
-.btn-primary-custom{
-
-    background:#1677ff;
-
-    border:none;
-
-    color:white;
-
-    padding:
-        12px 24px;
-
-    border-radius:10px;
-
-    text-decoration:none;
-
-    display:inline-flex;
-
-    align-items:center;
-
-    gap:10px;
-
-    transition:.25s;
-}
-
-
-.btn-primary-custom:hover{
-
-    background:#0d63da;
-
-    color:white;
-
-    transform:
-        translateY(-2px);
-
-}
-
-
-.btn-outline-custom{
-
-    border:
-        1px solid
-        rgba(255,255,255,.2);
-
-    color:#dceaff;
-
-    padding:
-        12px 24px;
-
-    border-radius:10px;
-
-    text-decoration:none;
-
-    display:inline-flex;
-
-    align-items:center;
-
-    gap:10px;
-
-    margin-left:10px;
-
-    transition:.25s;
-}
-
-
-.btn-outline-custom:hover{
-
-    background:
-        rgba(255,255,255,.08);
-
-    color:white;
+    max-width:680px;
 }
 
 
 /* =========================================================
-   HERO VISUAL
+   BUTTON
 ========================================================= */
 
-.drive-preview{
+.btn-gos{
+    border:none;
 
-    position:relative;
+    color:#fff;
 
-    margin-top:40px;
+    font-weight:600;
 
-    padding:25px;
+    padding:
+        12px
+        22px;
 
-    border-radius:25px;
+    border-radius:12px;
 
     background:
         linear-gradient(
-            145deg,
-            rgba(255,255,255,.12),
-            rgba(255,255,255,.03)
+            135deg,
+            #1677ff,
+            #654cff
         );
+
+    box-shadow:
+        0 10px 35px
+        rgba(45,100,255,.30);
+
+    transition:
+        transform .25s,
+        box-shadow .25s;
+}
+
+
+.btn-gos:hover{
+    color:#fff;
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 15px 40px
+        rgba(45,100,255,.45);
+}
+
+
+.btn-outline-gos{
+    border:
+        1px solid
+        rgba(255,255,255,.15);
+
+    color:#dce9f8;
+
+    padding:
+        12px
+        22px;
+
+    border-radius:12px;
+
+    background:
+        rgba(255,255,255,.05);
+
+    backdrop-filter:blur(10px);
+}
+
+
+.btn-outline-gos:hover{
+    color:#fff;
+
+    background:
+        rgba(255,255,255,.10);
+}
+
+
+/* =========================================================
+   GLASS CARD
+========================================================= */
+
+.glass{
+    background:
+        rgba(255,255,255,.055);
 
     border:
         1px solid
         rgba(255,255,255,.10);
 
     box-shadow:
-        0 30px 80px
-        rgba(0,0,0,.35);
+        0 20px 60px
+        rgba(0,0,0,.25);
 
-    backdrop-filter:
-        blur(20px);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
 
+    border-radius:24px;
 }
 
 
-.preview-top{
+/* =========================================================
+   DRIVE PREVIEW
+========================================================= */
 
-    display:flex;
+.drive-preview{
+    padding:25px;
 
-    align-items:center;
+    position:relative;
 
-    gap:8px;
-
-    margin-bottom:25px;
+    overflow:hidden;
 }
 
 
-.preview-dot{
+.drive-preview::before{
+    content:"";
 
-    width:10px;
+    position:absolute;
 
-    height:10px;
+    width:250px;
+    height:250px;
+
+    background:
+        rgba(0,150,255,.18);
 
     border-radius:50%;
 
-    background:#64748b;
+    filter:blur(80px);
+
+    right:-100px;
+    top:-100px;
 }
 
 
-.preview-title{
+.window-top{
+    display:flex;
+    align-items:center;
 
-    margin-left:10px;
+    gap:7px;
 
-    color:#9fb1c8;
-
-    font-size:13px;
+    margin-bottom:20px;
 }
 
 
-.folder-box{
+.window-dot{
+    width:9px;
+    height:9px;
 
-    display:grid;
+    border-radius:50%;
 
-    grid-template-columns:
-        repeat(3,1fr);
-
-    gap:15px;
+    background:
+        rgba(255,255,255,.35);
 }
 
 
-.folder{
+.drive-title{
+    font-size:14px;
+    color:#9fb0c5;
+}
 
-    padding:20px;
+
+.folder-card{
+    padding:15px;
 
     border-radius:15px;
 
     background:
-        rgba(255,255,255,.06);
+        rgba(255,255,255,.045);
 
     border:
         1px solid
         rgba(255,255,255,.06);
 
+    margin-bottom:12px;
 }
 
 
-.folder i{
+.folder-icon{
+    color:#54aaff;
 
-    font-size:30px;
+    font-size:20px;
 
-    color:#4da3ff;
-
-    margin-bottom:10px;
+    margin-right:10px;
 }
 
 
-.folder small{
+.file-row{
+    display:flex;
 
-    display:block;
+    align-items:center;
 
-    color:#aebed4;
+    justify-content:space-between;
+
+    padding:
+        10px
+        5px;
+
+    color:#b9c8da;
+
+    font-size:14px;
+}
+
+
+.file-row i{
+    margin-right:8px;
 }
 
 
@@ -470,98 +746,68 @@ body::after{
    SECTION
 ========================================================= */
 
-.section{
-
+section{
     padding:
-        100px 0;
-}
-
-
-.section-label{
-
-    color:#4da3ff;
-
-    font-size:13px;
-
-    font-weight:700;
-
-    text-transform:uppercase;
-
-    letter-spacing:2px;
-
-    margin-bottom:12px;
+        100px
+        20px;
 }
 
 
 .section-title{
-
     font-size:
-        clamp(30px,4vw,48px);
+        clamp(
+            32px,
+            4vw,
+            48px
+        );
 
     font-weight:750;
 
-    margin-bottom:20px;
+    letter-spacing:-1px;
+
+    margin-bottom:18px;
 }
 
 
 .section-description{
+    color:#9fb0c5;
 
-    color:#9fb1c8;
-
-    max-width:750px;
+    max-width:700px;
 
     line-height:1.8;
 }
 
 
 /* =========================================================
-   FEATURE CARDS
+   FEATURE CARD
 ========================================================= */
 
 .feature-card{
-
     height:100%;
 
     padding:30px;
 
-    border-radius:20px;
-
-    background:
-        rgba(255,255,255,.045);
-
-    border:
-        1px solid
-        rgba(255,255,255,.08);
-
     transition:
-        .3s;
-
+        transform .3s,
+        border-color .3s;
 }
 
 
 .feature-card:hover{
-
     transform:
-        translateY(-6px);
+        translateY(-8px);
 
     border-color:
-        rgba(77,163,255,.3);
-
-    background:
-        rgba(255,255,255,.07);
+        rgba(77,163,255,.35);
 }
 
 
 .feature-icon{
-
     width:55px;
-
     height:55px;
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     border-radius:15px;
@@ -569,25 +815,23 @@ body::after{
     background:
         rgba(77,163,255,.12);
 
-    color:#5eaeff;
+    color:#62b4ff;
 
-    font-size:23px;
+    font-size:22px;
 
     margin-bottom:22px;
 }
 
 
 .feature-card h4{
-
-    font-size:19px;
+    font-size:20px;
 
     margin-bottom:12px;
 }
 
 
 .feature-card p{
-
-    color:#93a6bd;
+    color:#94a7be;
 
     line-height:1.7;
 
@@ -596,84 +840,42 @@ body::after{
 
 
 /* =========================================================
-   SECURITY
+   SECURITY SECTION
 ========================================================= */
 
-.security-section{
-
-    background:
-        rgba(255,255,255,.025);
-
-    border-top:
-        1px solid
-        rgba(255,255,255,.06);
-
-    border-bottom:
-        1px solid
-        rgba(255,255,255,.06);
-}
-
-
 .security-box{
-
-    padding:40px;
-
-    border-radius:25px;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(16,95,180,.18),
-            rgba(255,255,255,.035)
-        );
-
-    border:
-        1px solid
-        rgba(77,163,255,.15);
+    padding:45px;
 }
 
 
-.security-item{
+.security-list{
+    list-style:none;
 
+    padding:0;
+
+    margin:25px 0 0;
+}
+
+
+.security-list li{
     display:flex;
 
-    gap:15px;
+    align-items:flex-start;
 
-    margin-bottom:22px;
-}
+    gap:14px;
 
+    margin-bottom:18px;
 
-.security-item:last-child{
-
-    margin-bottom:0;
-}
-
-
-.security-item i{
-
-    color:#4da3ff;
-
-    font-size:19px;
-
-    margin-top:4px;
-}
-
-
-.security-item strong{
-
-    display:block;
-
-    margin-bottom:4px;
-}
-
-
-.security-item span{
-
-    color:#93a6bd;
-
-    font-size:14px;
+    color:#b9c8da;
 
     line-height:1.6;
+}
+
+
+.security-list i{
+    color:#57b2ff;
+
+    margin-top:4px;
 }
 
 
@@ -681,76 +883,59 @@ body::after{
    STORAGE
 ========================================================= */
 
-.storage-card{
+.storage-number{
+    font-size:65px;
 
-    padding:35px;
-
-    border-radius:22px;
+    font-weight:800;
 
     background:
-        rgba(255,255,255,.045);
+        linear-gradient(
+            135deg,
+            #fff,
+            #5bb4ff
+        );
 
-    border:
-        1px solid
-        rgba(255,255,255,.08);
-}
+    -webkit-background-clip:text;
 
-
-.storage-icon{
-
-    font-size:42px;
-
-    color:#4da3ff;
-
-    margin-bottom:20px;
+    -webkit-text-fill-color:transparent;
 }
 
 
 /* =========================================================
-   FLOW
+   WORKFLOW
 ========================================================= */
 
-.flow{
+.workflow-item{
+    position:relative;
 
-    display:flex;
+    padding:28px;
 
-    justify-content:center;
-
-    align-items:center;
-
-    gap:10px;
-
-    flex-wrap:wrap;
-
-    margin-top:45px;
+    height:100%;
 }
 
 
-.flow-item{
+.workflow-number{
+    font-size:13px;
 
-    padding:
-        15px 20px;
+    color:#63b6ff;
 
-    border-radius:12px;
+    font-weight:700;
 
-    background:
-        rgba(255,255,255,.06);
-
-    border:
-        1px solid
-        rgba(255,255,255,.08);
-
-    color:#d9e7f8;
-
-    font-size:14px;
+    margin-bottom:12px;
 }
 
 
-.flow-arrow{
+.workflow-item h4{
+    margin-bottom:10px;
+}
 
-    color:#4da3ff;
 
-    font-size:18px;
+.workflow-item p{
+    color:#94a7be;
+
+    line-height:1.7;
+
+    margin:0;
 }
 
 
@@ -759,59 +944,83 @@ body::after{
 ========================================================= */
 
 .cta{
-
     padding:
-        80px 20px;
+        70px
+        30px;
 
     text-align:center;
+
+    position:relative;
+
+    overflow:hidden;
 }
 
 
-.cta-box{
+.cta::before{
+    content:"";
 
-    max-width:900px;
+    position:absolute;
 
-    margin:auto;
+    width:400px;
+    height:400px;
 
-    padding:
-        60px 30px;
-
-    border-radius:30px;
+    border-radius:50%;
 
     background:
-        linear-gradient(
-            135deg,
-            rgba(22,119,255,.18),
-            rgba(255,255,255,.04)
-        );
+        rgba(0,120,255,.20);
 
-    border:
-        1px solid
-        rgba(77,163,255,.2);
+    filter:blur(100px);
+
+    left:-100px;
+    top:-200px;
+}
+
+
+.cta::after{
+    content:"";
+
+    position:absolute;
+
+    width:400px;
+    height:400px;
+
+    border-radius:50%;
+
+    background:
+        rgba(110,70,255,.20);
+
+    filter:blur(100px);
+
+    right:-100px;
+    bottom:-200px;
+}
+
+
+.cta-content{
+    position:relative;
+
+    z-index:2;
 }
 
 
 .cta h2{
-
     font-size:
-        clamp(30px,4vw,48px);
+        clamp(
+            30px,
+            4vw,
+            48px
+        );
 
-    font-weight:750;
+    font-weight:800;
 
     margin-bottom:15px;
 }
 
 
 .cta p{
+    color:#a9b9cc;
 
-    color:#9fb1c8;
-
-    max-width:650px;
-
-    margin:
-        0 auto 30px;
-
-    line-height:1.8;
+    margin-bottom:28px;
 }
 
 
@@ -820,25 +1029,22 @@ body::after{
 ========================================================= */
 
 footer{
-
     padding:
-        35px 0;
+        35px
+        20px;
 
     border-top:
         1px solid
         rgba(255,255,255,.07);
 
-    color:#71839a;
+    color:#718197;
 
-    font-size:13px;
+    font-size:14px;
 }
 
 
-.footer-brand{
-
-    color:#dceaff;
-
-    font-weight:700;
+footer strong{
+    color:#a9cfff;
 }
 
 
@@ -846,996 +1052,1038 @@ footer{
    RESPONSIVE
 ========================================================= */
 
-@media(max-width:768px){
+@media(max-width:991px){
 
     .hero{
-
-        padding-top:60px;
-
-        min-height:auto;
+        padding-top:80px;
     }
 
     .hero h1{
-
         letter-spacing:-1px;
     }
 
-    .hero-description{
-
-        font-size:16px;
-    }
-
-    .folder-box{
-
-        grid-template-columns:
-            repeat(2,1fr);
-    }
-
-    .btn-outline-custom{
-
-        margin-left:0;
-
-        margin-top:10px;
-    }
-
-    .security-box{
-
-        padding:25px;
+    .drive-preview{
+        margin-top:45px;
     }
 
 }
 
-</style>
 
+@media(max-width:767px){
+
+    section{
+        padding:
+            75px
+            18px;
+    }
+
+    .hero{
+        min-height:auto;
+
+        padding:
+            80px
+            18px
+            70px;
+    }
+
+    .hero h1{
+        font-size:42px;
+    }
+
+    .hero p{
+        font-size:16px;
+    }
+
+    .gradient-blob{
+        width:420px;
+        height:420px;
+
+        filter:blur(80px);
+    }
+
+    .security-box{
+        padding:30px 22px;
+    }
+
+}
+
+
+/* =========================================================
+   REDUCE MOTION
+========================================================= */
+
+@media(prefers-reduced-motion:reduce){
+
+    html{
+        scroll-behavior:auto;
+    }
+
+    .gradient-blob,
+    .gradient-flow{
+        animation:none!important;
+    }
+
+    .btn-gos,
+    .feature-card{
+        transition:none!important;
+    }
+}
+
+</style>
 </head>
 
 
 <body>
 
 
-<!-- =====================================================
-     NAVBAR
-===================================================== -->
-
-<nav class="navbar navbar-expand-lg sticky-top">
-
-<div class="container">
-
-<a
-    href="#"
-    class="brand"
->
-
-<i class="fa-solid fa-cloud"></i>
-
-GosDrive
-
-</a>
-
-
-<button
-    class="navbar-toggler"
-    type="button"
-    data-bs-toggle="collapse"
-    data-bs-target="#navbarNav"
->
-
-<span class="navbar-toggler-icon"></span>
-
-</button>
-
+<!-- =======================================================
+     ANIMATED BACKGROUND
+======================================================= -->
 
 <div
-    class="collapse navbar-collapse"
-    id="navbarNav"
+    class="gradient-bg"
+    aria-hidden="true"
 >
 
-<ul class="navbar-nav ms-auto">
+    <div class="gradient-blob gradient-blue"></div>
 
-<li class="nav-item">
-<a
-    class="nav-link"
-    href="#fitur"
->
-    Fitur
-</a>
-</li>
+    <div class="gradient-blob gradient-purple"></div>
 
-<li class="nav-item">
-<a
-    class="nav-link"
-    href="#keamanan"
->
-    Keamanan
-</a>
-</li>
+    <div class="gradient-blob gradient-cyan"></div>
 
-<li class="nav-item">
-<a
-    class="nav-link"
-    href="#penyimpanan"
->
-    Penyimpanan
-</a>
-</li>
+    <div class="gradient-blob gradient-dark-blue"></div>
 
-</ul>
+    <div class="gradient-flow"></div>
+
+    <div class="gradient-overlay"></div>
 
 </div>
 
-</div>
+
+<!-- =======================================================
+     NAVBAR
+======================================================= -->
+
+<nav class="navbar navbar-expand-lg fixed-top">
+
+    <div class="container">
+
+        <a
+            class="navbar-brand"
+            href="#"
+        >
+            <i class="fa-solid fa-cloud me-2"></i>
+            GosDrive
+        </a>
+
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarMenu"
+            aria-controls="navbarMenu"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+            <i class="fa-solid fa-bars text-white"></i>
+        </button>
+
+
+        <div
+            class="collapse navbar-collapse"
+            id="navbarMenu"
+        >
+
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="#tentang"
+                    >
+                        Tentang
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="#fitur"
+                    >
+                        Fitur
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="#keamanan"
+                    >
+                        Keamanan
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="#penyimpanan"
+                    >
+                        Penyimpanan &nbsp; |
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="https://e-galihos.blogspot.com/" target="_blank"
+                    >
+                        Blogger
+                    </a>
+                </li>                
+
+            </ul>
+
+        </div>
+
+    </div>
 
 </nav>
 
 
-
-<!-- =====================================================
+<!-- =======================================================
      HERO
-===================================================== -->
+======================================================= -->
 
 <section class="hero">
 
-<div class="container">
+    <div class="container">
 
-<div class="row align-items-center g-5">
+        <div class="row align-items-center g-5">
 
-<div class="col-lg-7">
+            <div class="col-lg-7">
 
-<div class="hero-badge">
+                <div class="hero-badge">
 
-<i class="fa-solid fa-shield-halved"></i>
+                    <i class="fa-solid fa-bolt"></i>
 
-Digital Document Management
+                    Digital Document Management
 
-</div>
+                </div>
 
 
-<h1>
+                <h1>
 
-Satu tempat untuk
+                    Satu tempat untuk
 
-<span>
-menyimpan.
-</span>
+                    <span>
+                        menyimpan.
+                    </span>
 
-Mengelola.
+                    Mengelola.
 
-Mengakses.
+                    <span>
+                        Mengakses.
+                    </span>
 
-</h1>
+                </h1>
 
 
-<p class="hero-description">
+                <p>
 
-<strong>GosDrive</strong> adalah aplikasi manajemen dan
-penyimpanan dokumen berbasis web yang dirancang untuk
-membantu pengguna menyimpan, mengelola, mencari,
-melihat pratinjau, mengunduh, dan membagikan dokumen
-secara lebih terstruktur.
+                    GosDrive membantu Anda menyimpan,
+                    mengelola, mencari, melihat preview,
+                    mengunduh, dan berbagi dokumen
+                    dalam satu lingkungan digital
+                    yang terstruktur.
 
-</p>
+                </p>
 
 
-<div class="hero-buttons">
+                <div class="d-flex flex-wrap gap-3 mt-4">
 
-<a
-    href="login.php"
-    class="btn-primary-custom"
->
+                    <a
+                        href="login.php"
+                        class="btn btn-gos"
+                    >
 
-<i class="fa-solid fa-right-to-bracket"></i>
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>
 
-Masuk ke GosDrive
+                        Masuk ke GosDrive
 
-</a>
+                    </a>
 
 
-<a
-    href="#fitur"
-    class="btn-outline-custom"
->
+                    <a
+                        href="#fitur"
+                        class="btn btn-outline-gos"
+                    >
 
-Pelajari Fitur
+                        <i class="fa-solid fa-layer-group me-2"></i>
 
-<i class="fa-solid fa-arrow-down"></i>
+                        Lihat Fitur
 
-</a>
+                    </a>
 
-</div>
+                </div>
 
-</div>
+            </div>
 
 
+            <!-- DRIVE PREVIEW -->
 
-<div class="col-lg-5">
+            <div class="col-lg-5">
 
-<div class="drive-preview">
+                <div class="glass drive-preview">
 
-<div class="preview-top">
+                    <div class="window-top">
 
-<div class="preview-dot"></div>
+                        <span class="window-dot"></span>
+                        <span class="window-dot"></span>
+                        <span class="window-dot"></span>
 
-<div class="preview-dot"></div>
+                        <span class="drive-title ms-2">
+                            GosDrive
+                        </span>
 
-<div class="preview-dot"></div>
+                    </div>
 
-<div class="preview-title">
 
-GosDrive / My Documents
+                    <div class="folder-card">
 
-</div>
+                        <div class="mb-3">
 
-</div>
+                            <i class="fa-solid fa-folder folder-icon"></i>
 
+                            Dokumen
 
-<div class="folder-box">
+                        </div>
 
-<div class="folder">
 
-<i class="fa-solid fa-folder"></i>
+                        <div class="file-row">
 
-<small>
-Dokumen
-</small>
+                            <span>
+                                <i class="fa-solid fa-file-pdf"></i>
+                                Laporan.pdf
+                            </span>
 
-</div>
+                            <small>
+                                2.4 MB
+                            </small>
 
+                        </div>
 
-<div class="folder">
 
-<i class="fa-solid fa-folder"></i>
+                        <div class="file-row">
 
-<small>
-Laporan
-</small>
+                            <span>
+                                <i class="fa-solid fa-file-word"></i>
+                                Surat.docx
+                            </span>
 
-</div>
+                            <small>
+                                1.2 MB
+                            </small>
 
+                        </div>
 
-<div class="folder">
 
-<i class="fa-solid fa-folder"></i>
+                        <div class="file-row">
 
-<small>
-Arsip
-</small>
+                            <span>
+                                <i class="fa-solid fa-file-excel"></i>
+                                Data.xlsx
+                            </span>
 
-</div>
+                            <small>
+                                860 KB
+                            </small>
 
+                        </div>
 
-<div class="folder">
+                    </div>
 
-<i class="fa-solid fa-file-pdf"></i>
 
-<small>
-Laporan.pdf
-</small>
+                    <div class="folder-card">
 
-</div>
+                        <i class="fa-solid fa-folder folder-icon"></i>
 
+                        Arsip
 
-<div class="folder">
+                    </div>
 
-<i class="fa-solid fa-file-image"></i>
 
-<small>
-Dokumen.jpg
-</small>
+                    <div class="folder-card">
 
-</div>
+                        <i class="fa-solid fa-folder folder-icon"></i>
 
+                        Administrasi
 
-<div class="folder">
+                    </div>
 
-<i class="fa-solid fa-file-lines"></i>
+                </div>
 
-<small>
-Data.docx
-</small>
+            </div>
 
-</div>
+        </div>
 
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </section>
 
 
+<!-- =======================================================
+     TENTANG
+======================================================= -->
 
-<!-- =====================================================
-     ABOUT
-===================================================== -->
+<section id="tentang">
 
-<section
-    class="section"
-    id="tentang"
->
+    <div class="container">
 
-<div class="container">
+        <div class="row">
 
-<div class="row">
+            <div class="col-lg-8">
 
-<div class="col-lg-8">
-
-<div class="section-label">
-Tentang GosDrive
-</div>
-
-<h2 class="section-title">
-
-Bukan sekadar penyimpanan file.
-
-</h2>
+                <div class="hero-badge">
+                    <i class="fa-solid fa-cloud"></i>
+                    Tentang GosDrive
+                </div>
 
 
-<p class="section-description">
+                <h2 class="section-title">
 
-GosDrive dirancang sebagai platform pengelolaan
-dokumen digital yang mengintegrasikan penyimpanan,
-pengorganisasian, pencarian, preview, pengunduhan,
-dan distribusi dokumen dalam satu sistem berbasis web.
+                    Dokumen lebih teratur,
+                    pekerjaan lebih sederhana.
 
-</p>
+                </h2>
 
 
-<p class="section-description mt-3">
+                <p class="section-description">
 
-Pengguna dapat mengorganisasi file berdasarkan folder,
-mencari dokumen dengan lebih mudah, melihat berbagai
-jenis file secara langsung melalui fitur preview,
-mengunduh dokumen sesuai kebutuhan, serta membagikan
-file maupun folder melalui tautan khusus.
+                    GosDrive merupakan aplikasi manajemen
+                    dan penyimpanan dokumen berbasis web
+                    yang dirancang untuk memberikan
+                    pengalaman pengelolaan file yang
+                    sederhana, cepat, dan terstruktur.
 
-</p>
+                </p>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 </section>
 
 
+<!-- =======================================================
+     FITUR
+======================================================= -->
 
-<!-- =====================================================
-     FEATURES
-===================================================== -->
+<section id="fitur">
 
-<section
-    class="section"
-    id="fitur"
->
+    <div class="container">
 
-<div class="container">
+        <div class="text-center mb-5">
 
-<div class="section-label">
-Kemampuan Sistem
-</div>
+            <div class="hero-badge">
+                <i class="fa-solid fa-grid-2"></i>
+                Kemampuan Sistem
+            </div>
 
-<h2 class="section-title">
 
-Semua kebutuhan dokumen dalam satu tempat.
+            <h2 class="section-title">
+                Semua kebutuhan file
+                dalam satu tempat.
+            </h2>
 
-</h2>
 
-<p class="section-description mb-5">
+            <p class="section-description mx-auto">
+                Kelola dokumen dengan fitur yang
+                dirancang untuk penggunaan sehari-hari.
+            </p>
 
-GosDrive menggabungkan berbagai fungsi pengelolaan
-dokumen dalam sebuah lingkungan kerja digital yang
-sederhana dan terstruktur.
+        </div>
 
-</p>
 
+        <div class="row g-4">
 
-<div class="row g-4">
+            <div class="col-md-6 col-lg-4">
 
+                <div class="glass feature-card">
 
-<!-- FEATURE 1 -->
+                    <div class="feature-icon">
 
-<div class="col-md-6 col-lg-4">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
 
-<div class="feature-card">
+                    </div>
 
-<div class="feature-icon">
+                    <h4>
+                        Upload File
+                    </h4>
 
-<i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p>
+                        Simpan berbagai jenis dokumen
+                        ke dalam penyimpanan GosDrive
+                        secara terstruktur.
+                    </p>
 
-</div>
+                </div>
 
-<h4>
-Penyimpanan
-</h4>
+            </div>
 
-<p>
 
-Menyimpan dokumen secara terpusat sehingga file
-dapat dikelola dalam satu lingkungan digital.
+            <div class="col-md-6 col-lg-4">
 
-</p>
+                <div class="glass feature-card">
 
-</div>
+                    <div class="feature-icon">
 
-</div>
+                        <i class="fa-solid fa-folder-tree"></i>
 
+                    </div>
 
+                    <h4>
+                        Manajemen Folder
+                    </h4>
 
-<!-- FEATURE 2 -->
+                    <p>
+                        Organisasikan file berdasarkan
+                        folder sehingga dokumen lebih
+                        mudah ditemukan.
+                    </p>
 
-<div class="col-md-6 col-lg-4">
+                </div>
 
-<div class="feature-card">
+            </div>
 
-<div class="feature-icon">
 
-<i class="fa-solid fa-folder-tree"></i>
+            <div class="col-md-6 col-lg-4">
 
-</div>
+                <div class="glass feature-card">
 
-<h4>
-Organisasi Folder
-</h4>
+                    <div class="feature-icon">
 
-<p>
+                        <i class="fa-solid fa-magnifying-glass"></i>
 
-Mengelompokkan file berdasarkan folder agar struktur
-dokumen lebih rapi dan mudah ditemukan.
+                    </div>
 
-</p>
+                    <h4>
+                        Pencarian
+                    </h4>
 
-</div>
+                    <p>
+                        Temukan dokumen dengan lebih
+                        cepat melalui fitur pencarian
+                        file dan folder.
+                    </p>
 
-</div>
+                </div>
 
+            </div>
 
 
-<!-- FEATURE 3 -->
+            <div class="col-md-6 col-lg-4">
 
-<div class="col-md-6 col-lg-4">
+                <div class="glass feature-card">
 
-<div class="feature-card">
+                    <div class="feature-icon">
 
-<div class="feature-icon">
+                        <i class="fa-solid fa-eye"></i>
 
-<i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
 
-</div>
+                    <h4>
+                        Preview
+                    </h4>
 
-<h4>
-Pencarian
-</h4>
+                    <p>
+                        Lihat dokumen tertentu secara
+                        langsung tanpa harus mengunduh
+                        file terlebih dahulu.
+                    </p>
 
-<p>
+                </div>
 
-Membantu menemukan dokumen dengan lebih cepat melalui
-fitur pencarian file.
+            </div>
 
-</p>
 
-</div>
+            <div class="col-md-6 col-lg-4">
 
-</div>
+                <div class="glass feature-card">
 
+                    <div class="feature-icon">
 
+                        <i class="fa-solid fa-download"></i>
 
-<!-- FEATURE 4 -->
+                    </div>
 
-<div class="col-md-6 col-lg-4">
+                    <h4>
+                        Download
+                    </h4>
 
-<div class="feature-card">
+                    <p>
+                        Unduh dokumen secara individual
+                        maupun melalui pengelolaan file
+                        yang tersedia.
+                    </p>
 
-<div class="feature-icon">
+                </div>
 
-<i class="fa-solid fa-eye"></i>
+            </div>
 
-</div>
 
-<h4>
-File Preview
-</h4>
+            <div class="col-md-6 col-lg-4">
 
-<p>
+                <div class="glass feature-card">
 
-Melihat pratinjau berbagai jenis file tanpa harus
-mengunduhnya terlebih dahulu.
+                    <div class="feature-icon">
 
-</p>
+                        <i class="fa-solid fa-share-nodes"></i>
 
-</div>
+                    </div>
 
-</div>
+                    <h4>
+                        Berbagi File
+                    </h4>
 
+                    <p>
+                        Bagikan dokumen dan folder
+                        menggunakan mekanisme berbagi
+                        yang tersedia pada GosDrive.
+                    </p>
 
+                </div>
 
-<!-- FEATURE 5 -->
+            </div>
 
-<div class="col-md-6 col-lg-4">
+        </div>
 
-<div class="feature-card">
-
-<div class="feature-icon">
-
-<i class="fa-solid fa-download"></i>
-
-</div>
-
-<h4>
-Download
-</h4>
-
-<p>
-
-Mengunduh dokumen sesuai kebutuhan dengan mekanisme
-akses berdasarkan hak pengguna.
-
-</p>
-
-</div>
-
-</div>
-
-
-
-<!-- FEATURE 6 -->
-
-<div class="col-md-6 col-lg-4">
-
-<div class="feature-card">
-
-<div class="feature-icon">
-
-<i class="fa-solid fa-share-nodes"></i>
-
-</div>
-
-<h4>
-File & Folder Sharing
-</h4>
-
-<p>
-
-Membagikan file atau folder menggunakan tautan khusus
-tanpa memberikan akses langsung ke akun pengguna.
-
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </section>
 
 
-
-<!-- =====================================================
+<!-- =======================================================
      SECURITY
-===================================================== -->
+======================================================= -->
 
-<section
-    class="section security-section"
-    id="keamanan"
->
+<section id="keamanan">
 
-<div class="container">
+    <div class="container">
 
-<div class="row align-items-center g-5">
+        <div class="glass security-box">
 
+            <div class="row align-items-center g-5">
 
-<div class="col-lg-5">
+                <div class="col-lg-6">
 
-<div class="section-label">
-Security
-</div>
+                    <div class="hero-badge">
 
-<h2 class="section-title">
+                        <i class="fa-solid fa-shield-halved"></i>
 
-Keamanan menjadi bagian dari sistem.
+                        Security
 
-</h2>
+                    </div>
 
-<p class="section-description">
 
-GosDrive menerapkan sejumlah mekanisme keamanan
-untuk membantu menjaga autentikasi, session,
-akses file, dan proses berbagi dokumen.
+                    <h2 class="section-title">
 
-</p>
+                        Dokumen tetap
+                        berada dalam kendali.
 
-</div>
+                    </h2>
 
 
-<div class="col-lg-7">
+                    <p class="section-description">
 
-<div class="security-box">
+                        GosDrive dirancang dengan mekanisme
+                        akses pengguna sehingga pengelolaan
+                        dokumen dapat dilakukan secara lebih
+                        terkontrol.
 
+                    </p>
 
-<div class="security-item">
+                </div>
 
-<i class="fa-solid fa-user-shield"></i>
 
-<div>
+                <div class="col-lg-6">
 
-<strong>
-Autentikasi Pengguna
-</strong>
+                    <ul class="security-list">
 
-<span>
-Akses aplikasi dilakukan melalui akun pengguna
-yang telah terdaftar.
-</span>
+                        <li>
 
-</div>
+                            <i class="fa-solid fa-circle-check"></i>
 
-</div>
+                            <span>
+                                Sistem login pengguna.
+                            </span>
 
+                        </li>
 
-<div class="security-item">
 
-<i class="fa-solid fa-key"></i>
+                        <li>
 
-<div>
+                            <i class="fa-solid fa-circle-check"></i>
 
-<strong>
-Password Hashing
-</strong>
+                            <span>
+                                Pengelolaan file berdasarkan
+                                pengguna.
+                            </span>
 
-<span>
-Password tidak disimpan dalam bentuk teks biasa,
-melainkan menggunakan mekanisme hashing.
-</span>
+                        </li>
 
-</div>
 
-</div>
+                        <li>
 
+                            <i class="fa-solid fa-circle-check"></i>
 
-<div class="security-item">
+                            <span>
+                                Pengelolaan folder yang
+                                terstruktur.
+                            </span>
 
-<i class="fa-solid fa-fingerprint"></i>
+                        </li>
 
-<div>
 
-<strong>
-Session Management
-</strong>
+                        <li>
 
-<span>
-Session dikelola untuk membantu menjaga identitas
-dan status autentikasi pengguna.
-</span>
+                            <i class="fa-solid fa-circle-check"></i>
 
-</div>
+                            <span>
+                                Mekanisme preview dan
+                                download dokumen.
+                            </span>
 
-</div>
+                        </li>
 
+                    </ul>
 
-<div class="security-item">
+                </div>
 
-<i class="fa-solid fa-link-slash"></i>
+            </div>
 
-<div>
+        </div>
 
-<strong>
-Pembatasan Hak Akses
-</strong>
-
-<span>
-File dikelola berdasarkan identitas pengguna dan
-kepemilikan data.
-</span>
-
-</div>
-
-</div>
-
-
-<div class="security-item">
-
-<i class="fa-solid fa-shield-halved"></i>
-
-<div>
-
-<strong>
-Security Headers</strong>
-
-<span>
-Aplikasi menggunakan sejumlah security header
-untuk menambah lapisan perlindungan pada aplikasi web.
-</span>
-
-</div>
-
-</div>
-
-
-<div class="security-item">
-
-<i class="fa-solid fa-link"></i>
-
-<div>
-
-<strong>
-Secure Sharing Token
-</strong>
-
-<span>
-Mekanisme tautan berbagi menggunakan token khusus
-untuk mengidentifikasi resource yang dibagikan.
-</span>
-
-</div>
-
-</div>
-
-
-</div>
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </section>
 
 
-
-<!-- =====================================================
+<!-- =======================================================
      STORAGE
-===================================================== -->
+======================================================= -->
 
-<section
-    class="section"
-    id="penyimpanan"
->
+<section id="penyimpanan">
 
-<div class="container">
+    <div class="container">
 
-<div class="row align-items-center g-5">
+        <div class="row align-items-center g-5">
 
+            <div class="col-lg-5">
 
-<div class="col-lg-6">
+                <div class="hero-badge">
 
-<div class="storage-card">
+                    <i class="fa-solid fa-database"></i>
 
-<div class="storage-icon">
+                    Storage
 
-<i class="fa-solid fa-server"></i>
-
-</div>
-
-<h3>
-Penyimpanan Fleksibel
-</h3>
-
-<p class="section-description">
-
-GosDrive dirancang agar dapat menggunakan
-penyimpanan lokal maupun media penyimpanan jaringan.
-Dengan demikian, kapasitas penyimpanan dapat
-disesuaikan dengan kebutuhan organisasi.
-
-</p>
-
-</div>
-
-</div>
+                </div>
 
 
-<div class="col-lg-6">
+                <h2 class="section-title">
 
-<div class="storage-card">
+                    Penyimpanan
+                    terorganisir.
 
-<div class="storage-icon">
-
-<i class="fa-solid fa-network-wired"></i>
-
-</div>
-
-<h3>
-Internal Document Center
-</h3>
-
-<p class="section-description">
-
-Integrasi dengan media penyimpanan jaringan
-memungkinkan GosDrive digunakan sebagai pusat
-pengelolaan dokumen internal tanpa harus sepenuhnya
-bergantung pada layanan cloud storage pihak ketiga.
-
-</p>
-
-</div>
-
-</div>
+                </h2>
 
 
-</div>
+                <p class="section-description">
 
-</div>
+                    File dapat dikelompokkan ke dalam
+                    struktur folder sehingga dokumen
+                    tidak bercampur dan lebih mudah
+                    dikelola.
+
+                </p>
+
+            </div>
+
+
+            <div class="col-lg-7">
+
+                <div class="glass p-4">
+
+                    <div class="row text-center">
+
+                        <div class="col-md-4 mb-4 mb-md-0">
+
+                            <div class="storage-number">
+                                01
+                            </div>
+
+                            <div>
+                                Upload
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4 mb-4 mb-md-0">
+
+                            <div class="storage-number">
+                                02
+                            </div>
+
+                            <div>
+                                Organize
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="storage-number">
+                                03
+                            </div>
+
+                            <div>
+                                Access
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </section>
 
 
-
-<!-- =====================================================
+<!-- =======================================================
      WORKFLOW
-===================================================== -->
+======================================================= -->
 
-<section class="section">
+<section>
 
-<div class="container text-center">
+    <div class="container">
 
-<div class="section-label">
-Document Workflow
-</div>
+        <div class="text-center mb-5">
 
-<h2 class="section-title">
+            <div class="hero-badge">
 
-Dari penyimpanan hingga distribusi.
+                <i class="fa-solid fa-diagram-project"></i>
 
-</h2>
+                Document Workflow
 
-<p class="section-description mx-auto">
-
-Seluruh proses pengelolaan dokumen dapat dilakukan
-dalam satu alur kerja digital.
-
-</p>
+            </div>
 
 
-<div class="flow">
+            <h2 class="section-title">
 
-<div class="flow-item">
-<i class="fa-solid fa-upload"></i>
-Upload
-</div>
+                Alur kerja sederhana.
 
-<div class="flow-arrow">
-<i class="fa-solid fa-arrow-right"></i>
-</div>
+            </h2>
 
-<div class="flow-item">
-<i class="fa-solid fa-folder"></i>
-Organize
-</div>
+        </div>
 
-<div class="flow-arrow">
-<i class="fa-solid fa-arrow-right"></i>
-</div>
 
-<div class="flow-item">
-<i class="fa-solid fa-magnifying-glass"></i>
-Search
-</div>
+        <div class="row g-4">
 
-<div class="flow-arrow">
-<i class="fa-solid fa-arrow-right"></i>
-</div>
+            <div class="col-md-3">
 
-<div class="flow-item">
-<i class="fa-solid fa-eye"></i>
-Preview
-</div>
+                <div class="glass workflow-item">
 
-<div class="flow-arrow">
-<i class="fa-solid fa-arrow-right"></i>
-</div>
+                    <div class="workflow-number">
+                        STEP 01
+                    </div>
 
-<div class="flow-item">
-<i class="fa-solid fa-download"></i>
-Download
-</div>
+                    <h4>
+                        Upload
+                    </h4>
 
-<div class="flow-arrow">
-<i class="fa-solid fa-arrow-right"></i>
-</div>
+                    <p>
+                        Masukkan dokumen ke dalam
+                        GosDrive.
+                    </p>
 
-<div class="flow-item">
-<i class="fa-solid fa-share-nodes"></i>
-Share
-</div>
+                </div>
 
-</div>
+            </div>
 
-</div>
+
+            <div class="col-md-3">
+
+                <div class="glass workflow-item">
+
+                    <div class="workflow-number">
+                        STEP 02
+                    </div>
+
+                    <h4>
+                        Organize
+                    </h4>
+
+                    <p>
+                        Atur dokumen berdasarkan
+                        folder.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-3">
+
+                <div class="glass workflow-item">
+
+                    <div class="workflow-number">
+                        STEP 03
+                    </div>
+
+                    <h4>
+                        Preview
+                    </h4>
+
+                    <p>
+                        Periksa dokumen sebelum
+                        digunakan.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-3">
+
+                <div class="glass workflow-item">
+
+                    <div class="workflow-number">
+                        STEP 04
+                    </div>
+
+                    <h4>
+                        Share
+                    </h4>
+
+                    <p>
+                        Bagikan dokumen ketika
+                        diperlukan.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </section>
 
 
-
-<!-- =====================================================
+<!-- =======================================================
      CTA
-===================================================== -->
+======================================================= -->
 
-<section class="cta">
+<section>
 
-<div class="cta-box">
+    <div class="container">
 
-<h2>
+        <div class="glass cta">
 
-Kelola dokumen lebih terstruktur.
+            <div class="cta-content">
 
-</h2>
-
-<p>
-
-GosDrive membantu mengubah penyimpanan file biasa
-menjadi lingkungan pengelolaan dokumen digital
-yang terorganisasi, mudah diakses, dan terintegrasi.
-
-</p>
+                <h2>
+                    Mulai kelola dokumen
+                    dengan GosDrive.
+                </h2>
 
 
-<a
-    href="login.php"
-    class="btn-primary-custom"
->
+                <p>
+                    Satu tempat untuk menyimpan,
+                    mengelola, dan mengakses dokumen.
+                </p>
 
-<i class="fa-solid fa-cloud"></i>
 
-Masuk ke GosDrive
+                <a
+                    href="login.php"
+                    class="btn btn-gos"
+                >
 
-</a>
+                    <i class="fa-solid fa-arrow-right me-2"></i>
 
-</div>
+                    Masuk ke GosDrive
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </section>
 
 
-
-<!-- =====================================================
+<!-- =======================================================
      FOOTER
-===================================================== -->
+======================================================= -->
 
 <footer>
 
-<div class="container">
+    <div class="container">
 
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex flex-wrap justify-content-between gap-3">
 
-<div>
+            <div>
 
-<span class="footer-brand">
-GosDrive
-</span>
+                <strong>
+                    <i class="fa-solid fa-cloud me-2"></i>
+                    GosDrive
+                </strong>
 
-&nbsp; — Digital Document Management
+                <span class="ms-2">
+                    Digital Document Management
+                </span>
 
-</div>
+            </div>
 
 
-<div>
+            <div>
 
-© <?= date('Y') ?> GosDrive
+                &copy;
+                <?= date('Y') ?>
+                GosDrive
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 </footer>
 
 
-<!-- Bootstrap JS -->
+<!-- =======================================================
+     BOOTSTRAP JS
+======================================================= -->
 
 <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-></script>
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
+</script>
 
 
 </body>
-
 </html>
