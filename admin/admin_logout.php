@@ -160,6 +160,10 @@ $_SESSION['logout_success'] =
 
 <head>
 
+<link
+    rel="shortcut icon"
+    href="..\ghostdrive.png"
+>
 <meta charset="UTF-8">
 
 <meta
